@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>BEYOND MARIANA – MARIANA TOURS</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#02101a;color:#fff;overflow:hidden;
+ font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;-webkit-user-select:none;user-select:none}
+#game{position:fixed;inset:0;z-index:0}
+.hidden{display:none !important}
+button{font-family:inherit;cursor:pointer}
+
+/* ---------- Menü ---------- */
+#menu{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(ellipse at 50% 20%,#0d4a6b 0%,#062a40 45%,#02101a 100%);padding:20px;overflow:auto}
+#menu .box{width:min(560px,100%);text-align:center}
+#menu h1{margin:0;font-size:clamp(34px,8vw,64px);letter-spacing:.08em;font-weight:900;
+ background:linear-gradient(180deg,#e9fbff,#5be4ff 70%,#2a9cc8);-webkit-background-clip:text;background-clip:text;color:transparent}
+#menu .sub{margin:6px 0 26px;opacity:.8;letter-spacing:.06em;font-size:14px}
+.screen{display:none;flex-direction:column;gap:12px}
+.screen.active{display:flex}
+.screen h2{margin:0 0 6px;font-size:20px;letter-spacing:.12em;color:#8fefff}
+.btn{padding:15px 20px;border-radius:14px;border:1px solid rgba(143,239,255,.45);
+ background:linear-gradient(180deg,rgba(40,120,160,.55),rgba(10,50,80,.7));color:#fff;
+ font-size:17px;font-weight:800;letter-spacing:.1em}
+.btn:hover,.btn:focus{outline:none;border-color:#8fefff;box-shadow:0 0 18px rgba(91,228,255,.5)}
+.btn.disabled{opacity:.45;pointer-events:none}
+.btn small{display:block;font-size:11px;font-weight:600;opacity:.7;letter-spacing:.06em;margin-top:2px}
+.btn.primary{background:linear-gradient(180deg,#ff9a3a,#e0661a);border-color:#ffc27a}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.lang button{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(143,239,255,.4);
+ background:rgba(10,50,80,.6);color:#fff;font-weight:800;font-size:16px}
+.lang button.on{background:#2a9cc8;border-color:#8fefff}
+.setrow{display:flex;flex-direction:column;gap:8px;text-align:left;font-size:14px;opacity:.95}
+.setrow label{display:flex;justify-content:space-between;font-weight:700;letter-spacing:.06em}
+.setrow input[type=range]{width:100%;accent-color:#5be4ff;height:28px}
+.range-ends{display:flex;justify-content:space-between;font-size:12px;opacity:.65}
+.help{text-align:left;font-size:12.5px;line-height:1.5;opacity:.82;background:rgba(0,0,0,.25);
+ border-radius:12px;padding:10px 12px;margin:0}
+.level-card{display:flex;align-items:center;gap:14px;text-align:left;padding:13px 14px;border-radius:14px;
+ border:1px solid rgba(143,239,255,.4);background:rgba(10,50,80,.6);color:#fff}
+.level-card .num{width:42px;height:42px;border-radius:12px;background:#2a9cc8;display:flex;align-items:center;
+ justify-content:center;font-size:20px;font-weight:900;flex:0 0 auto}
+.level-card .info{flex:1;min-width:0}
+.level-card .name{font-weight:800;font-size:16px}
+.level-card .desc{font-size:12px;opacity:.75;margin-top:2px}
+.level-card .state{font-size:11px;font-weight:800;letter-spacing:.08em;color:#7dffc4}
+.level-card.locked{opacity:.55}
+.level-card.locked .num{background:#344}
+.level-card.locked .state{color:#9ab}
+.level-card.unlocked .num{background:#8a5cff}
+.level-card.unlocked .state{color:#ffd23a}
+.level-card:hover,.level-card:focus{outline:none;border-color:#8fefff;box-shadow:0 0 18px rgba(91,228,255,.4)}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;inset:0;z-index:20;pointer-events:none}
+.hud-card{position:absolute;padding:8px 12px;border-radius:12px;background:rgba(8,18,32,.58);
+ border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.hud-card .lbl{font-size:10px;letter-spacing:.12em;opacity:.65;font-weight:700}
+#hud-left{left:calc(12px + env(safe-area-inset-left,0px));top:calc(10px + env(safe-area-inset-top,0px));min-width:150px}
+#hud-left .depth{font-size:30px;font-weight:900;line-height:1.1}
+#hud-left .depth small{font-size:14px;color:#8fefff;margin-left:3px}
+.bar{height:9px;border-radius:6px;background:rgba(255,255,255,.18);overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#2a9cc8,#5be4ff);transition:width .3s}
+.bar i.low{background:linear-gradient(90deg,#ff3a5a,#ff8a9c);animation:blink 0.8s infinite}
+@keyframes blink{50%{opacity:.45}}
+#hud-o2-text{font-size:12px;font-weight:800;margin-top:2px;opacity:.9}
+#hud-sights{right:calc(12px + env(safe-area-inset-right,0px));top:calc(62px + env(safe-area-inset-top,0px));text-align:center}
+#hud-sights .icons{display:flex;gap:8px;margin-top:4px;justify-content:center}
+.sight{font-size:26px;filter:grayscale(1) opacity(.4);transition:filter .4s,transform .4s}
+.sight.got{filter:none;transform:scale(1.15);text-shadow:0 0 12px #7dffc4}
+#hud-sight-count{font-size:13px;font-weight:800;color:#7dffc4;margin-top:2px}
+#btn-menu{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));
+ z-index:46;pointer-events:auto;padding:9px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.3);
+ background:rgba(8,18,32,.6);color:#fff;font-weight:800;font-size:12px;letter-spacing:.1em}
+#hud-objective{position:absolute;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+ max-width:min(640px,86vw);text-align:center;padding:8px 16px;border-radius:999px;background:rgba(8,18,32,.6);
+ border:1px solid rgba(143,239,255,.35);font-size:14px;font-weight:700;color:#d8f8ff}
+#hud-objective:empty{display:none}
+#hud-message{position:absolute;left:50%;top:22%;transform:translateX(-50%);max-width:min(620px,88vw);text-align:center;
+ padding:12px 20px;border-radius:16px;background:rgba(8,18,32,.74);border:1px solid rgba(143,239,255,.4);
+ font-size:16px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none}
+#hud-message.show{opacity:1}
+#hud-mode{position:absolute;left:50%;top:74px;transform:translateX(-50%);font-size:12px;letter-spacing:.14em;font-weight:800;
+ opacity:0;transition:opacity .4s;color:#8fefff;margin-top:36px}
+#hud-mode.show{opacity:.95}
+#hud-high{position:absolute;left:50%;top:calc(52px + env(safe-area-inset-top,0px));transform:translateX(-50%);
+ padding:4px 12px;border-radius:999px;background:linear-gradient(90deg,#ff4fd8,#7a5cff,#4fe8ff);font-weight:900;font-size:14px;
+ animation:blink 1.2s infinite}
+#hud-flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:30;transition:opacity .12s}
+#hud-flash.show{opacity:.55}
+
+/* ---------- Touch-Steuerung ---------- */
+#touch{position:fixed;inset:0;z-index:40;pointer-events:none}
+#touch .tbtn{pointer-events:auto;border:1px solid rgba(255,255,255,.32);background:rgba(8,18,32,.5);color:#fff;
+ border-radius:16px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+ backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#touch .tbtn:active,#touch .tbtn.on{background:rgba(91,228,255,.5);border-color:#8fefff}
+#touch .tbtn span{font-size:20px;line-height:1}
+#touch .tbtn em{font-style:normal;font-size:9px;letter-spacing:.06em;opacity:.85}
+.dpad{position:absolute;left:calc(18px + env(safe-area-inset-left,0px));bottom:calc(58px + env(safe-area-inset-bottom,0px));
+ width:176px;height:176px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:6px}
+.dpad .tbtn{font-size:22px}
+.dpad [data-hold=forward]{grid-area:1/2}.dpad [data-hold=left]{grid-area:2/1}
+.dpad [data-hold=right]{grid-area:2/3}.dpad [data-hold=back]{grid-area:3/2}
+.vert{position:absolute;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(58px + env(safe-area-inset-bottom,0px));
+ display:flex;flex-direction:column;gap:8px}
+.vert .tbtn{width:82px;height:82px}
+.actions{position:absolute;right:calc(116px + env(safe-area-inset-right,0px));bottom:calc(58px + env(safe-area-inset-bottom,0px));
+ display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:180px}
+.actions .tbtn{width:80px;height:62px}
+
+/* ---------- Tour-Abrechnung ---------- */
+#result{position:fixed;inset:0;z-index:110;display:flex;align-items:center;justify-content:center;
+ background:rgba(2,12,22,.82);padding:14px;overflow:auto}
+#result .panel{width:min(600px,100%);max-height:100%;overflow:auto;background:linear-gradient(180deg,#0b3550,#06202f);
+ border:1px solid rgba(143,239,255,.45);border-radius:20px;padding:20px 20px 16px;text-align:center;position:relative}
+#result h2{margin:0 0 10px;letter-spacing:.12em;color:#ffd23a;font-size:22px}
+#result h3{margin:16px 0 8px;letter-spacing:.12em;color:#8fefff;font-size:15px}
+.res-stars{display:flex;align-items:baseline;justify-content:center;gap:10px}
+.starbar{font-size:34px;letter-spacing:4px;
+ background:linear-gradient(90deg,#ffcf3a var(--p,70%),rgba(255,255,255,.25) var(--p,70%));
+ -webkit-background-clip:text;background-clip:text;color:transparent}
+#res-num{font-size:28px;font-weight:900;color:#ffcf3a}
+.res-line{display:flex;justify-content:space-between;padding:6px 10px;font-size:15px;border-bottom:1px solid rgba(255,255,255,.1)}
+.res-line b{color:#7dffc4}
+.res-level{margin:10px 0 0;padding:8px 10px;border-radius:10px;font-weight:800;font-size:14px}
+.res-level.ok{background:rgba(125,255,196,.18);color:#7dffc4}
+.res-level.no{background:rgba(255,255,255,.08);color:#cfe}
+.shop-item{display:flex;align-items:center;gap:12px;text-align:left;padding:10px;border-radius:12px;
+ background:rgba(255,255,255,.07);margin-bottom:8px;border:1px solid rgba(255,255,255,.12)}
+.shop-item .ic{font-size:28px;width:40px;text-align:center}
+.shop-item .info{flex:1;min-width:0}
+.shop-item .name{font-weight:800;font-size:15px}
+.shop-item .desc{font-size:12px;opacity:.75;margin-top:2px}
+.shop-item.owned{border-color:#7dffc4;background:rgba(125,255,196,.1)}
+.buy{padding:10px 12px;border-radius:10px;border:1px solid #ffc27a;background:linear-gradient(180deg,#ff9a3a,#e0661a);
+ color:#fff;font-weight:800;font-size:13px;white-space:nowrap}
+.buy.poor{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#cde}
+.buy.got{background:rgba(125,255,196,.2);border-color:#7dffc4;color:#7dffc4;cursor:default}
+.buy:focus{outline:2px solid #8fefff}
+#res-toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);padding:6px 14px;border-radius:999px;
+ background:rgba(0,0,0,.8);font-weight:800;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none}
+#res-toast.show{opacity:1}
+#result .actions2{display:flex;gap:10px;margin-top:14px}
+#result .actions2 .btn{flex:1;padding:13px 10px;font-size:14px}
+
+@media (max-width:640px){
+ .dpad{width:150px;height:150px}.vert .tbtn{width:70px;height:70px}.actions .tbtn{width:70px;height:56px}
+ .actions{right:calc(96px + env(safe-area-inset-right,0px));max-width:150px}
+ #hud-left{min-width:120px}#hud-left .depth{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- 3D-Spiel (Canvas wird von script.js eingefügt) -->
+<div id="game"></div>
+
+<!-- Treffer-Blitz -->
+<div id="hud-flash"></div>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div id="hud-left" class="hud-card">
+    <div class="lbl" data-i18n="depth">TIEFE</div>
+    <div class="depth"><span id="hud-depth">0</span><small>m</small></div>
+    <div class="lbl" style="margin-top:6px" data-i18n="oxygen">SAUERSTOFF</div>
+    <div class="bar"><i id="hud-o2"></i></div>
+    <div id="hud-o2-text">100%</div>
+  </div>
+
+  <div id="hud-sights" class="hud-card">
+    <div class="lbl" data-i18n="sights">SEHENSWÜRDIGKEITEN</div>
+    <div class="icons">
+      <span class="sight" id="sight-0">🚢</span>
+      <span class="sight" id="sight-1">💎</span>
+      <span class="sight" id="sight-2">🐋</span>
+    </div>
+    <div id="hud-sight-count">0/3</div>
+  </div>
+
+  <div id="hud-high" class="hidden"></div>
+  <div id="hud-mode"></div>
+  <div id="hud-message"></div>
+  <div id="hud-objective"></div>
+</div>
+
+<button id="btn-menu" type="button" style="display:none" data-i18n="menu">MENÜ</button>
+
+<!-- Touch-Buttons (iPad) -->
+<div id="touch" class="hidden">
+  <div class="dpad">
+    <button class="tbtn" data-hold="forward" type="button">▲</button>
+    <button class="tbtn" data-hold="left" type="button">◀</button>
+    <button class="tbtn" data-hold="right" type="button">▶</button>
+    <button class="tbtn" data-hold="back" type="button">▼</button>
+  </div>
+  <div class="actions">
+    <button class="tbtn" data-act="light" type="button"><span>💡</span><em data-i18n="btnLight">LICHT</em></button>
+    <button class="tbtn" data-act="cam" type="button"><span>🎥</span><em data-i18n="btnCam">KAMERA</em></button>
+    <button class="tbtn" data-act="stand" type="button"><span>🧍</span><em data-i18n="btnStand">AUFSTEHEN</em></button>
+    <button class="tbtn" data-act="arm" type="button"><span>🦾</span><em data-i18n="btnArm">ARM</em></button>
+    <button class="tbtn" data-act="action" type="button"><span>✋</span><em data-i18n="btnAction">AKTION</em></button>
+  </div>
+  <div class="vert">
+    <button class="tbtn" data-hold="up" type="button"><span>⬆</span><em data-i18n="btnUp">AUF</em></button>
+    <button class="tbtn" data-hold="down" type="button"><span>⬇</span><em data-i18n="btnDown">AB</em></button>
+  </div>
+</div>
+
+<!-- Tour-Abrechnung + Upgrade-Shop -->
+<div id="result" class="hidden">
+  <div class="panel">
+    <div id="res-toast"></div>
+    <h2 data-i18n="resTitle">TOUR-ABRECHNUNG</h2>
+    <div class="res-stars"><span class="starbar" id="res-stars">★★★★★</span><b id="res-num">4.0</b></div>
+    <div class="res-line"><span data-i18n="resEarned">Verdient</span><b id="res-earned">+0 €</b></div>
+    <div class="res-line"><span data-i18n="resWallet">Kasse</span><b id="res-wallet">0 €</b></div>
+    <div id="res-level" class="res-level"></div>
+    <h3 data-i18n="shopTitle">UPGRADE-SHOP</h3>
+    <div id="shop-list"></div>
+    <div class="actions2">
+      <button id="result-continue" class="btn primary" type="button" data-i18n="resContinue">NÄCHSTE TOUR</button>
+      <button id="result-menu" class="btn" type="button" data-i18n="resMenu">ZUM MENÜ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hauptmenü -->
+<div id="menu">
+  <div class="box">
+    <h1>BEYOND MARIANA</h1>
+    <p class="sub" data-i18n="subtitle">MARIANA TOURS</p>
+
+    <div class="screen active" id="screen-main">
+      <button id="btn-resume" class="btn primary hidden" type="button" data-i18n="resume">WEITER</button>
+      <button class="btn" type="button" data-go="play" data-i18n="play">PLAY</button>
+      <button class="btn" type="button" data-go="settings" data-i18n="settings">SETTINGS</button>
+    </div>
+
+    <div class="screen" id="screen-play">
+      <button class="btn" type="button" data-go="levels" data-i18n="singleplayer">SINGLEPLAYER</button>
+      <button class="btn disabled" type="button" disabled><span data-i18n="multiplayer">MULTIPLAYER</span><small data-i18n="comingSoon">Coming Soon</small></button>
+      <button class="btn disabled" type="button" disabled><span data-i18n="story">STORY</span><small data-i18n="comingSoon">Coming Soon</small></button>
+      <button class="btn" type="button" data-back data-i18n="back">ZURÜCK</button>
+    </div>
+
+    <div class="screen" id="screen-levels">
+      <h2 data-i18n="chooseLevel">LEVEL WÄHLEN</h2>
+      <div id="level-list" style="display:flex;flex-direction:column;gap:10px"></div>
+      <button class="btn" type="button" data-back data-i18n="back">ZURÜCK</button>
+    </div>
+
+    <div class="screen" id="screen-settings">
+      <h2 data-i18n="settingsTitle">EINSTELLUNGEN</h2>
+      <div class="setrow">
+        <label><span data-i18n="language">Sprache</span></label>
+        <div class="row lang">
+          <button type="button" data-lang="de">DEUTSCH</button>
+          <button type="button" data-lang="en">ENGLISH</button>
+        </div>
+      </div>
+      <div class="setrow">
+        <label><span data-i18n="viewDistance">Sichtweite</span><span id="set-view-val">100%</span></label>
+        <input id="set-view" type="range" min="0.6" max="1.6" step="0.1" value="1">
+        <div class="range-ends"><span data-i18n="viewNear">kurz</span><span data-i18n="viewFar">weit</span></div>
+      </div>
+      <h2 style="margin-top:6px" data-i18n="controls">STEUERUNG</h2>
+      <p class="help" data-i18n="helpKb"></p>
+      <p class="help" data-i18n="helpPad"></p>
+      <p class="help" data-i18n="helpTouch"></p>
+      <button class="btn" type="button" data-back data-i18n="back">ZURÜCK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Three.js kommt über package.json / Vite: import * as THREE from 'three' (in script.js, sub.js, world.js) -->
+<script type="module" src="./script.js"></script>
+</body></html>
